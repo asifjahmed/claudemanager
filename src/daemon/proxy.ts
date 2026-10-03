@@ -606,6 +606,10 @@ export class Proxy {
 
   async close(): Promise<void> {
     this.affinity.flush();
-    await this.agent.close();
+    try {
+      await this.agent.close();
+    } catch (err: any) {
+      if (err?.code !== "UND_ERR_DESTROYED") throw err; // already closed by an earlier call
+    }
   }
 }

@@ -15,7 +15,11 @@ export function register(program: Command): void {
       const demo = await startDemo({ port: Number(o.port), log: (m) => process.stderr.write(c.dim(`${m}\n`)) });
       console.log(`demo dashboard: ${demo.url}/   ${c.dim("(synthetic accounts; ctrl-c to stop)")}`);
       if (o.open) openBrowser(`${demo.url}/`);
+      // a second signal (npx forwards the parent's) must not close twice
+      let closing = false;
       const stop = async () => {
+        if (closing) return;
+        closing = true;
         await demo.close();
         process.exit(0);
       };
