@@ -35,7 +35,7 @@ _The dashboard, from `cm demo` (synthetic accounts, no real login needed)._
 ## Install
 
 ```sh
-npm install -g claudemanager
+npm install -g @asifjahmed/claudemanager
 cm doctor
 ```
 

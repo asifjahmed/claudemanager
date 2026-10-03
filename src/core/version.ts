@@ -8,7 +8,7 @@ function read(): string {
   for (const cand of [join(here, "..", "..", "package.json"), join(here, "..", "..", "..", "package.json")]) {
     try {
       const j = JSON.parse(readFileSync(cand, "utf8"));
-      if (j?.name === "claudemanager" && typeof j.version === "string") return j.version;
+      if (/(^|\/)claudemanager$/.test(j?.name ?? "") && typeof j.version === "string") return j.version;
     } catch {
       /* try next */
     }
