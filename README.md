@@ -158,6 +158,13 @@ cm runway                     # will the pool run out before the next reset?
 cm purge --before 2026-09-01  # delete old rows (--vacuum shrinks the file)
 ```
 
+**Export for analysis or training**: `scripts/export-parquet.py` (needs `pip install pyarrow`) writes the log as
+zstd Parquet partitioned by day: `requests/` (metadata for every request), `turns/` (one row per session turn,
+with only that turn's new content and the response, so a session is stored once instead of once per request),
+`blobs/` (unique system prompts and tool sets by sha256). Label tables can key on `turn_id`. `--raw` adds the
+lossless per-request layer. Sync the output directory to object storage as is; DuckDB, Athena, Spark, pandas and
+Polars read the layout directly.
+
 The dashboard has the same views (Dashboard with the runway panel, Requests, Sessions, Stats), and manages
 accounts too: add one, rename, sign in again, set up a long-lived token, enable, disable or remove, all from the
 account cards. Sign-in and token setup run the `claude` CLI on the daemon's side and open the browser; the card
