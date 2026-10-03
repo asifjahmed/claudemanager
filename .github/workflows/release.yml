@@ -1,4 +1,6 @@
 name: Release
+# Publishes to npm through trusted publishing (OIDC): no token, no secret. The trusted publisher on
+# npmjs.com names this repository and this file; provenance is attached automatically.
 on:
   push:
     tags: ["v*"]
@@ -14,9 +16,6 @@ jobs:
         with:
           node-version: 26
           registry-url: https://registry.npmjs.org
-          cache: npm
       - run: npm ci
       - run: npm test
-      - run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish --access public
