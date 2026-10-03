@@ -16,12 +16,9 @@ cm status / cm watch / http://127.0.0.1:4141  <--+  polls each account's usage e
                                                  |  records prompts, responses, tokens (SQLite, local)
 ```
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/dashboard-dark.png">
-  <img alt="The claudemanager dashboard: routing policy, the free-reset planner, one card per account with its 5-hour, weekly and per-model windows, and the runway panel" src="docs/dashboard-light.png">
-</picture>
+<img alt="The claudemanager dashboard: routing policy, the free-reset planner, one card per account with its 5-hour, weekly and per-model windows, the runway panel, the request log and session attribution" src="docs/demo.gif" width="960">
 
-_The dashboard, from `cm demo` (synthetic accounts, no real login needed)._
+_The dashboard, from `cm demo` (synthetic accounts, no real login needed). Stills: [light](docs/dashboard-light.png) · [dark](docs/dashboard-dark.png)._
 
 ## Requirements and platforms
 
