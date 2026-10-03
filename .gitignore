@@ -4,3 +4,4 @@ dist-test/
 *.log
 *.tgz
 .DS_Store
+docs/launch/
