@@ -1,0 +1,76 @@
+{
+  "name": "claudemanager",
+  "version": "0.1.0",
+  "description": "Monitor several Claude Max accounts and route Claude Code traffic to the one with the most headroom, switching before a usage window fills",
+  "license": "MIT",
+  "author": "Jamie Ahmed",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/asifjahmed/claudemanager.git"
+  },
+  "homepage": "https://github.com/asifjahmed/claudemanager#readme",
+  "bugs": {
+    "url": "https://github.com/asifjahmed/claudemanager/issues"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "anthropic",
+    "proxy",
+    "rate-limit",
+    "usage",
+    "multi-account",
+    "max-plan"
+  ],
+  "type": "module",
+  "bin": {
+    "cm": "dist/cli/main.js"
+  },
+  "files": [
+    "dist",
+    "web",
+    "offers.json",
+    "offers.schema.json",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "os": [
+    "darwin",
+    "linux"
+  ],
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "clean": "rm -rf dist dist-test",
+    "build": "tsc -p tsconfig.json",
+    "build:test": "tsc -p tsconfig.test.json",
+    "typecheck": "tsc -p tsconfig.test.json --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" \"web/*.{js,css,html}\" \"*.md\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
+    "test": "npm run build:test && node --import ./dist-test/test/setup.js --test \"dist-test/test/**/*.test.js\"",
+    "dev:daemon": "tsx src/daemon/main.ts",
+    "dev:cli": "tsx src/cli/main.ts",
+    "start:daemon": "node dist/daemon/main.js",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run clean && npm run build && npm run lint && npm test",
+    "bench": "node bench/load.mjs"
+  },
+  "dependencies": {
+    "commander": "^15.0.0",
+    "undici": "^8.10.2",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.20.3",
+    "eslint": "^10.11.0",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.8",
+    "tsx": "^4.23.13",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.70.1"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://raw.githubusercontent.com/asifjahmed/claudemanager/main/offers.schema.json",
+  "version": 1,
+  "offers": [
+    {
+      "id": "anthropic-free-session-reset-2026-10",
+      "kind": "free-reset",
+      "title": "Free session reset",
+      "description": "Anthropic gave every account a one-time free session reset: it zeroes the 5-hour, weekly and per-model weekly windows immediately without changing the natural reset schedule.",
+      "startsAt": "2026-09-16T00:00:00Z",
+      "deadline": "2026-10-22T23:59:59-04:00",
+      "usesPerAccount": 1,
+      "resets": ["session", "weekly", "model"]
+    }
+  ]
+}

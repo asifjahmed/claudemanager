@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en" data-theme="">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>claudemanager</title>
+    <script>
+      try {
+        var t = localStorage.getItem("cm-theme");
+        if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13'>⚡</text></svg>" />
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <span class="bolt">⚡</span><span class="wordmark">claude<b>manager</b></span> <span id="conn" class="pill off">connecting</span>
+      </div>
+      <nav>
+        <button data-tab="dashboard" class="active">Dashboard</button>
+        <button data-tab="requests">Requests</button>
+        <button data-tab="sessions">Sessions</button>
+        <button data-tab="stats">Stats</button>
+      </nav>
+      <div class="seg" id="routing" title="Where new Claude Code sessions send their requests. Running sessions keep their current route.">
+        <span class="seg-lbl">New sessions</span>
+        <button id="route-on">via claudemanager</button>
+        <label class="seg-select" id="route-direct-wrap"
+          ><span id="route-direct-lbl">direct to Anthropic</span>
+          <select id="route-direct" title="Send new sessions straight to Anthropic as this account (uses its long-lived token)"></select>
+        </label>
+      </div>
+      <button id="theme" class="icon-btn" title="Theme: follows system. Click to cycle light / dark / system" aria-label="Toggle theme">
+        <span id="theme-icon">◐</span>
+      </button>
+    </header>
+
+    <main>
+      <section id="tab-dashboard" class="tab active">
+        <div class="policy" id="policy">
+          <span class="pol"><span class="k">sessions</span> <strong id="active">–</strong></span>
+          <label class="pol"
+            ><span class="k">pin</span>
+            <select id="pin">
+              <option value="">auto</option>
+            </select></label
+          >
+          <label class="pol" title="Switch away from an account when its 5-hour window reaches this"
+            ><span class="k">switch at session</span> <input id="threshold" type="range" min="50" max="100" step="1" />
+            <b><span id="thresholdVal"></span>%</b></label
+          >
+          <label class="pol" title="Exclude accounts whose weekly or per-model weekly window is at or above this"
+            ><span class="k">weekly</span> <input id="weeklyThreshold" type="range" min="50" max="100" step="1" />
+            <b><span id="weeklyThresholdVal"></span>%</b></label
+          >
+          <label class="pol" title="Spend quota that resets soonest first; proactively move to an account whose weekly window resets within this many hours"
+            ><input type="checkbox" id="preferSooner" /> <span class="k">soonest reset first, within</span>
+            <input id="perishableHours" type="number" min="0" max="168" /> <span class="k">h</span></label
+          >
+          <label
+            class="pol"
+            title="Send models that only use the shared windows (Sonnet, Opus, Haiku) to accounts whose Fable window is most spent, preserving Fable headroom elsewhere"
+            ><input type="checkbox" id="modelAware" /> <span class="k">preserve scarce model windows</span></label
+          >
+          <label
+            class="pol"
+            title="Assign each new session to a random eligible account instead of the ranked first. Spreads load across accounts; sessions still stick to their account afterwards (moving one re-writes its prompt cache)"
+            ><input type="checkbox" id="distribute" /> <span class="k">distribute new sessions randomly</span></label
+          >
+        </div>
+        <div id="jobs"></div>
+        <div id="offers"></div>
+        <div id="cards" class="cards"></div>
+        <div class="addrow">
+          <button id="add-account" class="primary">+ Add account</button>
+          <span class="muted">opens a browser sign-in for the new account (or <code>cm accounts add &lt;name&gt;</code>)</span>
+        </div>
+        <div class="panel runway" id="runway">
+          <div class="cap-head">
+            <h3>Runway</h3>
+            <span class="muted" id="rw-meta"></span>
+          </div>
+          <div id="rw-body" class="muted">loading…</div>
+          <h4 class="rw-sub">By model <span class="muted">· share of consumption by estimated cost; burn on each model's binding window</span></h4>
+          <table class="grid" id="rw-models">
+            <thead>
+              <tr>
+                <th>model</th>
+                <th class="r">req 24h / 7d</th>
+                <th class="r">share 24h</th>
+                <th class="r">share 7d</th>
+                <th class="r">burn/h 24h</th>
+                <th>binding window</th>
+                <th class="r">headroom</th>
+                <th class="r">eligible</th>
+                <th class="r">at own pace 24h</th>
+                <th class="r">at own pace 7d</th>
+                <th>next reset</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <h4 class="rw-sub">Resets, next 7 days</h4>
+          <div id="rw-timeline" class="timeline"></div>
+        </div>
+        <div class="row">
+          <div class="panel">
+            <h3>Events</h3>
+            <ul id="events" class="events"></ul>
+          </div>
+          <div class="panel">
+            <h3>Setup</h3>
+            <p>Route Claude Code through the proxy with the control in the header, or per shell:</p>
+            <pre>
+eval "$(cm env)"      # this shell only
+cm run -- claude         # one command</pre>
+            <p class="muted" id="dbinfo"></p>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-requests" class="tab">
+        <div class="filters">
+          <input id="f-q" placeholder="search prompt / response text" />
+          <select id="f-account">
+            <option value="">all accounts</option>
+          </select>
+          <input id="f-model" placeholder="model contains" />
+          <input id="f-session" placeholder="session id" />
+          <button id="f-apply">Apply</button>
+          <label><input type="checkbox" id="f-live" checked /> live</label>
+        </div>
+        <table class="grid" id="requests">
+          <thead>
+            <tr>
+              <th>id</th>
+              <th>time</th>
+              <th>account</th>
+              <th>model</th>
+              <th>session</th>
+              <th class="r">in</th>
+              <th class="r">out</th>
+              <th class="r">cache</th>
+              <th class="r">cost</th>
+              <th class="r">ms</th>
+              <th>status</th>
+              <th>prompt</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <section id="tab-sessions" class="tab">
+        <div class="filters">
+          <label
+            >window
+            <select id="at-hours">
+              <option value="24">24h</option>
+              <option value="72">3d</option>
+              <option value="168">7d</option>
+            </select></label
+          >
+          <span class="muted" id="at-meta"></span>
+        </div>
+        <table class="grid" id="sessions">
+          <thead>
+            <tr>
+              <th>session</th>
+              <th class="r">share</th>
+              <th class="r">weekly %</th>
+              <th class="r">5h %</th>
+              <th class="r">reqs</th>
+              <th class="r">cache read</th>
+              <th class="r">peak ctx</th>
+              <th>models</th>
+              <th>accounts</th>
+              <th>first prompt</th>
+              <th>last seen</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <p class="muted" style="font-size: 12px">
+          Share is the session's part of the pool's estimated cost in the window; weekly % and 5h % are the measured pooled consumption attributed by that
+          share. Click a row for context growth.
+        </p>
+      </section>
+
+      <section id="tab-stats" class="tab">
+        <div class="filters">
+          <label
+            >group by
+            <select id="s-by">
+              <option value="account">account</option>
+              <option value="model">model</option>
+              <option value="day">day</option>
+            </select></label
+          >
+          <label
+            >window
+            <select id="s-since">
+              <option value="">all time</option>
+              <option value="24">24h</option>
+              <option value="168">7d</option>
+              <option value="720">30d</option>
+            </select></label
+          >
+        </div>
+        <table class="grid" id="stats">
+          <thead>
+            <tr>
+              <th>key</th>
+              <th class="r">reqs</th>
+              <th class="r">errors</th>
+              <th class="r">retried</th>
+              <th class="r">in</th>
+              <th class="r">out</th>
+              <th class="r">cache read</th>
+              <th class="r">cache write</th>
+              <th class="r">est cost</th>
+              <th class="r">avg ms</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <h3>Session utilization, last 24h</h3>
+        <div id="history" class="history"></div>
+      </section>
+    </main>
+
+    <div id="modal" class="modal hidden">
+      <div class="modal-box">
+        <button class="close" id="modal-close">✕</button>
+        <div id="modal-body"></div>
+      </div>
+    </div>
+    <script src="/app.js"></script>
+  </body>
+</html>
