@@ -1,6 +1,6 @@
 {
   "name": "@asifjahmed/claudemanager",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Monitor several Claude Max accounts and route Claude Code traffic to the one with the most headroom, switching before a usage window fills",
   "license": "MIT",
   "author": "Jamie Ahmed",

@@ -1,8 +1,15 @@
 # Changelog
 
-## Unreleased
+## 0.1.1 — 2026-10-04
 
-- Default new installations to storing only the newest request turn; `log.bodies: full` remains available explicitly.
+- New installations store only the newest turn of each request (`log.bodies: lastTurn`); tool definitions
+  are kept in that mode so the context inspector keeps working. `full` remains available. (#6, by @1cbyc)
+- `cm demo` exits cleanly on a second shutdown signal instead of printing a stack trace under `npx`.
+- The build sets the execute bit on the CLI and daemon entries; a clean rebuild under `npm link` left `cm`
+  unrunnable.
+- `scripts/export-parquet.py`: export the request log as Parquet (requests, turns, blobs) for analysis or
+  training; documented under Observability.
+- README: demo tour GIF; npm trusted publishing for releases.
 
 ## 0.1.0 — 2026-10-03
 
