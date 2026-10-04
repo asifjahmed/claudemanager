@@ -61,7 +61,7 @@ export const ConfigSchema = z.object({
   log: z
     .object({
       retentionDays: z.number().min(0).default(30),
-      bodies: z.enum(["full", "lastTurn", "none"]).default("full"),
+      bodies: z.enum(["full", "lastTurn", "none"]).default("lastTurn"),
       maxDbMb: z.number().positive().default(2048),
     })
     .prefault({}),

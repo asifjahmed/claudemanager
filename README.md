@@ -146,7 +146,7 @@ p99 under 50 ms, and it runs inside a 512 MB heap. Things that keep it that way,
 
 ## Observability
 
-Every prompt and response through the proxy is stored in `~/.claudemanager/claudemanager.db`:
+Request metadata and responses through the proxy are stored in `~/.claudemanager/claudemanager.db`, while request bodies default to the newest turn; set `log.bodies: full` to store whole conversations:
 
 ```sh
 cm log                        # recent requests: account, model, session, tokens, cache, est. cost, latency
@@ -277,7 +277,7 @@ disables terminal colours; `CLAUDEMANAGER_OFFERS=off` disables promotions.
 | `upstream`                                      | `https://api.anthropic.com` | where requests are forwarded                                                                                                          |
 | `retryOn429`                                    | true                        | retry a genuine limit hit once on the next account                                                                                    |
 | `maxBodyBytes`                                  | 33554432                    | largest request body the proxy buffers                                                                                                |
-| `log.bodies`                                    | `full`                      | `full` \| `lastTurn` \| `none`                                                                                                        |
+| `log.bodies`                                    | `lastTurn`                  | `full` \| `lastTurn` \| `none`                                                                                                        |
 | `log.retentionDays`                             | 30                          | prune rows older than this                                                                                                            |
 | `log.maxDbMb`                                   | 2048                        | drop the oldest bodies above this much live data                                                                                      |
 | `advice.approachingHeadroom`                    | 15                          | pooled account-% below which a model family is "almost gone" (advice, `limit.approaching`)                                            |
