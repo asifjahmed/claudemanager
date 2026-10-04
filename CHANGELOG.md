@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Default new installations to storing only the newest request turn; `log.bodies: full` remains available explicitly.
+
 ## 0.1.0 — 2026-10-03
 
 First public release.
