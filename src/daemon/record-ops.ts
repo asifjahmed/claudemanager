@@ -316,7 +316,7 @@ export function applyWrite(db: Db, msg: WriteMsg, lastUserTextById: Map<number, 
           {
             system: body.system,
             messages: msg.mode === "full" ? body.messages : lastTurn(body.messages),
-            tools: msg.mode === "full" ? body.tools : null,
+            tools: body.tools,
             params: body.params,
             lastUserText: body.lastUserText,
           },

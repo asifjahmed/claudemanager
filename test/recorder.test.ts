@@ -1,6 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { ResponseAccumulator, parseRequestBody } from "../src/daemon/recorder.js";
+import { applyWrite } from "../src/daemon/record-ops.js";
+import { Db } from "../src/core/db.js";
 import { normalizeUsage, nextAnniversary } from "../src/core/usage.js";
 import { parseUserIdMetadata, modelFamily, keychainService, KEYCHAIN_SERVICE_BASE } from "../src/core/claude-internals.js";
 
@@ -70,6 +72,45 @@ test("parseRequestBody extracts model, session id, last user text", () => {
     parseRequestBody({ model: "x" }, { "x-claude-code-session-id": "12345678-1234-1234-1234-123456789abc" }).sessionId,
     "12345678-1234-1234-1234-123456789abc",
   );
+});
+
+test("last-turn recording keeps tool definitions", () => {
+  const db = new Db(":memory:");
+  const tools = [{ name: "Bash", description: "Run a command" }];
+  const raw = new TextEncoder().encode(
+    JSON.stringify({
+      model: "claude-fable-5-1",
+      messages: [
+        { role: "user", content: "earlier" },
+        { role: "assistant", content: "earlier response" },
+        { role: "user", content: "latest" },
+      ],
+      tools,
+    }),
+  ).buffer;
+
+  applyWrite(
+    db,
+    {
+      op: "start",
+      id: 1,
+      startedAt: Date.now(),
+      path: "/v1/messages",
+      model: "claude-fable-5-1",
+      stream: true,
+      sessionId: null,
+      accountUuid: null,
+      mode: "lastTurn",
+      raw,
+      modelFallbackFrom: null,
+    },
+    new Map(),
+  );
+
+  const body = db.getRequest(1)?.body;
+  assert.deepEqual(body?.messages, [{ role: "user", content: "latest" }]);
+  assert.deepEqual(body?.tools, tools);
+  db.close();
 });
 
 test("usage endpoint normalization", () => {
